@@ -1,4 +1,4 @@
-class Coal {
+class CoalComponent {
 	constructor(element) {
 		this._propertiesOperators = new Map();
 		this.state = this._proxify({});
@@ -25,11 +25,13 @@ class Coal {
 		var operators = this._propertiesOperators.get(property);
 
 		if(!operators || operators.length <= 0)
-			return;
+			return true;
 
 		operators.forEach((elements, operator) => {
 			this._applyStateChange(operator, elements, value);
 		});
+
+		return true;
 	}
 
 	_applyStateChange(operator, elements, value){
@@ -45,6 +47,7 @@ class Coal {
 
 		this._indexContentOperator(dom, 'coal-content');
 		this._indexClickOperator(dom, 'coal-click');
+		this._indexInputChangeState(dom, 'coal-input-change-state');
 
 		return dom;
 	}
@@ -79,63 +82,19 @@ class Coal {
 			element.addEventListener('click', e => this[name](e));
 		});
 	}
-}
 
-class CoalFramework {
-	constructor() {
-		this.tags = new Map();
-		this.components = new Map();
-	}
+	_indexInputChangeState(dom, operator){
+		var contentOperators = dom.querySelectorAll('[' + operator + ']');
+		var callbackName = Array.from(contentOperators).map(element => element.getAttribute(operator));
 
-	registerComponent(component){
-		this.tags.set(component.name, component);
-	}
+		callbackName.forEach((name, index) => {
 
-	start(){
-		this.tags.forEach((component, name) => {
-			var elements = document.querySelectorAll(name);
+			var element = contentOperators[index];
 
-			if(elements.length <= 0){
-				return;
-			}
+			element.addEventListener('input', event => this.state[name] = event.target.value);
 
-			elements.forEach(element => {
-
-				var instance = new component(element);
-
-				if(!this.components.get(name)){
-					this.components.set(name, new Set());
-				}
-
-				this.components.get(name).add(instance);
-
-				var dom = instance.getDom();
-
-				element.appendChild(dom);
-			});
+			if(typeof element.value !== 'undefined')
+				this.state[name] = element.value;
 		});
 	}
 }
-
-class Ash extends Coal {
-	render(){
-		return `
-		<div>
-			<div class="hostia-que-funciona" coal-content="name"></div>
-			<button coal-click="changeContentToShit"></button>
-		</div>
-		`;
-	}
-
-	changeContentToShit(){
-		this.state.name = Math.random().toFixed(5);
-	}
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-	var coal = new CoalFramework();
-
-	coal.registerComponent(Ash);
-
-	coal.start();
-});
