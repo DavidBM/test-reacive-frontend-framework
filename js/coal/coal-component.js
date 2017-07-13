@@ -35,8 +35,11 @@ class CoalComponent {
 	}
 
 	_applyStateChange(operator, elements, value){
-		if(operator === 'coal-content'){
+		if(operator === 'coal-content-unsafe'){
 			elements.forEach(element => element.innerHTML = value);
+		}
+		if(operator === 'coal-content'){
+			elements.forEach(element => element.textContent = value);
 		}
 	}
 
@@ -45,9 +48,9 @@ class CoalComponent {
 		template.innerHTML = this.render();
 		var dom = template.content;
 
-		this._indexContentOperator(dom, 'coal-content');
+		this._indexContentUnsafeOperator(dom, 'coal-content-unsafe');
 		this._indexClickOperator(dom, 'coal-click');
-		this._indexInputChangeState(dom, 'coal-input-change-state');
+		this._indexBindOperator(dom, 'coal-bind');
 
 		return dom;
 	}
@@ -70,7 +73,7 @@ class CoalComponent {
 		elements.add(element);
 	}
 
-	_indexContentOperator(dom, operator){
+	_indexContentUnsafeOperator(dom, operator){
 		var contentOperators = dom.querySelectorAll('[' + operator + ']');
 		var stateAttribute = Array.from(contentOperators).map(element => element.getAttribute(operator));
 
@@ -91,7 +94,7 @@ class CoalComponent {
 		});
 	}
 
-	_indexInputChangeState(dom, operator){
+	_indexBindOperator(dom, operator){
 		var contentOperators = dom.querySelectorAll('[' + operator + ']');
 		var callbackName = Array.from(contentOperators).map(element => element.getAttribute(operator));
 
