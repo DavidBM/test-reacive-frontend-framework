@@ -52,22 +52,30 @@ class CoalComponent {
 		return dom;
 	}
 
+	registerOperator(name, operator, element){
+		var operators = this._propertiesOperators.get(name);
+
+		if(!operators){
+			operators = new Map();
+			this._propertiesOperators.set(name, operators);
+		}
+
+		var elements = operators.get(operator);
+
+		if(!elements){
+			elements = new Set();
+			operators.set(operator, elements);
+		}
+
+		elements.add(element);
+	}
+
 	_indexContentOperator(dom, operator){
 		var contentOperators = dom.querySelectorAll('[' + operator + ']');
 		var stateAttribute = Array.from(contentOperators).map(element => element.getAttribute(operator));
 
 		stateAttribute.forEach(name => {
-
-			if(!this._propertiesOperators.get(name))
-				this._propertiesOperators.set(name, new Map());
-
-			if(!this._propertiesOperators.get(name).get(operator))
-				this._propertiesOperators.get(name).set(operator, new Set());
-
-			var propertyOperators = this._propertiesOperators.get(name).get(operator);
-
-			Array.from(contentOperators).forEach(element => propertyOperators.add(element));
-			
+			Array.from(contentOperators).forEach(element => this.registerOperator(name, operator, element));
 		});
 	}
 
